@@ -18,8 +18,8 @@ class Phi4Multimodal(BaseModel):
             raise e
 
         model = AutoModelForCausalLM.from_pretrained(
-            model_path, device_map='cuda', trust_remote_code=True,
-            torch_dtype='auto',attn_implementation='flash_attention_2'
+            model_path, device_map='auto', trust_remote_code=True,
+            torch_dtype='auto', _attn_implementation='sdpa'
         ).eval()
         processor = AutoProcessor.from_pretrained(model_path, trust_remote_code=True)
         generation_config = GenerationConfig.from_pretrained(model_path)
@@ -44,6 +44,7 @@ class Phi4Multimodal(BaseModel):
             **inputs,
             max_new_tokens=1000,
             generation_config=self.generation_config,
+            num_logits_to_keep=0,
         )
         generate_ids = generate_ids[:, inputs['input_ids'].shape[1]:]
         response = self.processor.batch_decode(
